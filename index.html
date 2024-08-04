@@ -55,7 +55,7 @@
         }
     </style>
     <meta charset="UTF-8">
-    <title>CelljigsawJS</title>
+    <title>CustomShapeJigsawGenerator</title>
     <script type="text/javascript" src="imagetracer.js"></script>
     <script type="text/javascript" src="flatten.js"></script>
     <script type="text/javascript">
@@ -64,7 +64,7 @@
         var timerID;
         var seed = 1;
         var tab_size = 0.1;
-        var tab_rel_size =0.1
+        var tab_rel_size = 0.1
         var tab_abs_size = 2;
         var tab_min_size = 1.5;
         var tab_max_size = 3;
@@ -173,16 +173,16 @@
             var length = Math.hypot(v2.x - v1.x, v2.y - v1.y);
 
             switch ($("tabsizemode").value) {
-                
+
                 case "rel":
                     tab_size = tab_rel_size;
                     break;
                 case "rabs":
                     tab_size = tab_rel_size;
-                    if((tab_rel_size *length)< tab_min_size){
+                    if ((tab_rel_size * length) < tab_min_size) {
                         tab_size = tab_min_size / length;
                     }
-                    if((tab_rel_size *length)> tab_max_size){
+                    if ((tab_rel_size * length) > tab_max_size) {
                         tab_size = tab_max_size / length;
                     }
                     break;
@@ -190,7 +190,7 @@
                     tab_size = tab_abs_size / length;
                     break;
             }
-    
+
             var str = "";
             next();
             if (isnew) {
@@ -497,10 +497,14 @@
                             }
                         });
 
-                        if (corner_cand.length == 1 && !this.cornergrid[corner_cand[0].row][corner_cand[0].col]) {
-                            this.cornergrid[corner_cand[0].row][corner_cand[0].col] = 1;
-                            corners.push(corner_cand[0]);
-                        }
+
+                        corner_cand.forEach((cc) => {
+                            if (!this.cornergrid[cc.row][cc.col]) {
+                                this.cornergrid[cc.row][cc.col] = 1;
+                                corners.push(cc);
+                            }
+                        });
+
                     }
                 }
                 this.cornertable = [];
@@ -522,6 +526,8 @@
                 }
                 return corners;
             }
+
+
             grow(row, col, growth, context) {
 
                 var neigh_coord = this.neighbor_coords(row, col, false).c;
@@ -563,10 +569,10 @@
                 });
 
             }
-            paintcorners(context, corners, size) {
+            paintcorners(context, corners, size, color) {
                 var pixelsize = parseInt($("pixelscell").value);
                 corners.forEach((c) => {
-                    context.fillStyle = "black";
+                    context.fillStyle = color;
                     context.fillRect((c.col * pixelsize) - size / 2, (c.row * pixelsize) - size / 2, size, size);
                 });
             }
@@ -725,6 +731,12 @@
                             context.fillRect(j * pixelsize, i * pixelsize, pixelsize, pixelsize);
 
                         }
+                        // if (this.cornergrid[i][j]) {
+                        //     context.fillStyle = this.colorArray[Math.abs(this.grid[i][j] - 1) % this.colorArray.length];
+                        //     context.strokeStyle = "red"
+                        //     context.strokeRect(j * pixelsize, i * pixelsize, pixelsize, pixelsize);
+
+                        // }
                     }
                 }
             }
@@ -785,6 +797,8 @@
         }
 
         function savesvg() {
+            window.alert("DISCLAIMER: This generator has no mechanism implemented to check and fix line intersections at this moment. Please check the output and fix any issues manually before cutting.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.");
+
             save("jigsaw.svg", svgstrsave);
         }
 
@@ -898,12 +912,15 @@
                 var growncells = 0;
                 radius = 0;
                 automata.get_empty_cells();
-
+                var stale = 0;
+                var prevgrowth = 0;
                 do {
                     growncells = automata.step(context, radius);
                     automata.empty_cells -= growncells;
                     radius = radius + 1;
-                } while (automata.empty_cells);
+                    if (growncells == 0) stale++;
+                    else stale = 0;
+                } while (automata.empty_cells && stale < 10);
                 paintoutput();
             }
             updatedimensions(1);
@@ -921,10 +938,13 @@
             canvas.setAttribute("height", rows * pixelsize + 5);// * 2);
             $("svgcontainer").setAttribute("width", cols * cellscale);
             $("svgcontainer").setAttribute("height", rows * cellscale);
-            automata.paint(context, palette);
             // console.log("Painted");
             var corners = automata.findcorners(customborder);
             // console.log("Cornered");
+            automata.paint(context, palette);
+            // automata.paintcorners(context, automata.added, 20,"black");
+
+            // automata.paintcorners(context, corners, 10,"red");
 
             var edges = automata.findedges(corners, context);
             // console.log("Edged");
@@ -1066,7 +1086,7 @@
             // Show the current tab, and add an "active" class to the button that opened the tab
             // document.getElementById(tab).style.display = "block";
             evt.currentTarget.className += " active";
-
+            changepiecetabmode();
             if (tab == "custom" && !customborder.width) {
                 window.alert("Please choose a custom SVG border file");
                 document.getElementById("borderfile").click();
@@ -1088,7 +1108,7 @@
             <tr class="custom">
                 <td>SVG border file:</td>
                 <td><input type="file" id="borderfile" accept=".svg" onchange="loadborder()"></td>
-                <td><input id="abv" type="checkbox" />Use viewbox</td>
+                <td><input id="abv" type="checkbox" checked />Use viewbox</td>
             </tr>
             <tr class="custom">
                 <td>Custom border scale factor:</td>
