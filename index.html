@@ -1057,25 +1057,37 @@
             if (tab == "rect") {
                 unloadborder();
             }
-
-
-            tabcontent = document.getElementsByClassName("controltable");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].removeAttribute("style");
-            }
-            // Get all elements with class="tabcontent" and hide them
-            tabcontent = document.getElementsByClassName("controltable");
-            for (i = 0; i < tabcontent.length; i++) {
-                rowelems = tabcontent[i].rows;
-                for (j = 0; j < rowelems.length; j++) {
-                    if (!rowelems[j].className || rowelems[j].className == tab) {
-                        rowelems[j].removeAttribute("style")
-                    } else {
-                        rowelems[j].style.display = "none"
+            if (tab == "help") {
+                tabcontent = document.getElementsByClassName("help");
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].removeAttribute("style");
+                }
+                tabcontent = document.getElementsByClassName("controltable");
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].style.display = "none";
+                }
+            } else {
+                tabcontent = document.getElementsByClassName("help");
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].style.display = "none";
+                }
+                tabcontent = document.getElementsByClassName("controltable");
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].removeAttribute("style");
+                }
+                // Get all elements with class="tabcontent" and hide them
+                tabcontent = document.getElementsByClassName("controltable");
+                for (i = 0; i < tabcontent.length; i++) {
+                    rowelems = tabcontent[i].rows;
+                    for (j = 0; j < rowelems.length; j++) {
+                        if (!rowelems[j].className || rowelems[j].className == tab) {
+                            rowelems[j].removeAttribute("style")
+                        } else {
+                            rowelems[j].style.display = "none"
+                        }
                     }
                 }
             }
-
 
             // Get all elements with class="tablinks" and remove the class "active"
             tablinks = document.getElementsByClassName("tablinks");
@@ -1102,6 +1114,8 @@
     <div class="tab">
         <button class="tablinks" id="default" onclick="switchtab(event, 'rect')">Rectangular border</button>
         <button class="tablinks" onclick="switchtab(event, 'custom')">Custom border</button>
+        <button class="tablinks" onclick="switchtab(event, 'help')">Help</button>
+
     </div>
     <div class="tabcontent">
         <table class="controltable">
@@ -1207,7 +1221,99 @@
             </tr>
 
         </table>
+        <div class="help">
+            <h2>How it works</h2>
+            <h3>Basic Initial setup</h3>
+            <p>This jigsaw generator generates the piece shapes through Voronoi tesselation. As-is it's a quick hack
+                reusing many of the functionality
+                from my other generator <a href="https://proceduraljigsaw.github.io/OrganicPuzzleJs/">here</a>
+                borrowing the normal jigsaw puzzle tab generation form <a
+                    href="https://draradech.github.io/jigsaw/index.html">this generator</a> by draradech.
+                You're on your own for now, I'll write some documentation eventually on how eveyrthing is supposed to
+                work.
+            </p>
 
+            <h3>Custom border mode usage</h3>
+            <p>
+                In this mode, the generator will use a custom border for the jigsaw, given by a border SVG file. When
+                you
+                set this mode, it will prompt you
+                to select a custom SVG border file. The SVG border file must be an SVG file defining the intended border
+                you
+                want to use. It must contain at least one area enclosed by
+                strokes, and it may have holes inside. The SVG border file will be preprocessed before generating the
+                jigsaw. First, your SVG file will be flattened. That means that all the SVG transforms
+                will be applied and burned in, and all the stroke and fill settings will be removed. Every element
+                (basic
+                shapes, paths) will be stripped of fill and stroke style attributes and set to no fill and a basic black
+                stroke. The contents of the files will be moved to the upper left corner and the extent of the drawing
+                will
+                be set to exactly contain all the elements.
+            </p>
+            <p>
+                Also, your SVG file will be stripped of dimension units information (set to unitless)
+                and interpreted as if its dimensions were millimeters. Finally, it will be scaled up or down by the
+                <strong>Custom border scale factor</strong>.
+            </p>
+            <h2>FAQ</h2>
+            <p><strong>Where are my border files uploaded?</strong></p>
+            <p>Nowhere. It all stays on your computer, the border file is just loaded into your browser and used
+                exclusively within the browser. You're basically
+                downloading a self-contained webapp and executing it locally, in fact you can download this for totally
+                offline use, see below.
+            </p>
+            <p><strong>Is this free?</strong></p>
+            <p>Yes, it is. The code falls under the <a
+                    href="https://raw.githubusercontent.com/proceduraljigsaw/CustomShapeJigsawJs/main/LICENSE">MIT
+                    license</a></p>
+            <p><strong>Where can I get the code?</strong></p>
+            <p><a href="https://github.com/proceduraljigsaw/CustomShapeJigsawJs">Here</a></p>
+            <p><strong>Can I use it offline somehow?</strong></p>
+            <p>Sure, this is all executed in your browser. Just clone the github repo or right-click save the web from
+                your browser. It will download all the required assets,
+                and you may run it by just opening index.html using your favorite browser.
+            </p>
+            <p><strong>Which browsers are supported?</strong></p>
+            <p>As far as I know, any modern browser should work. It's been tested on the most up to date versions
+                (August
+                2024) of Firefox, Chrome, Edge, and Safari.
+            </p>
+            <p><strong>Is this all your job?</strong></p>
+            <p>No, I use two third-party libraries.</p>
+            <ul>
+                <li>
+                    A heavily modified and stripped down version of <a
+                        href="https://github.com/jankovicsandras/imagetracerjs">imagetracerjs</a> 1.2.6 for
+                    vectorization (for this generator it's actually not used per se, but kept there to avoid having to
+                    change the structure too much)
+                </li>
+                <li>
+                    <a href="https://gist.github.com/timo22345/9413158">Flatten.js</a> for SVG transform flattening.
+                </li>
+                <li>
+                    <a href="https://draradech.github.io/jigsaw/index.html8">Draradech's jigsaw generator</a> where I
+                    borrowed the tab generating function from..
+                </li>
+
+            </ul>
+            <p><strong>Any known issues?</strong></p>
+            <p>
+                Many. This should be considered beta software, use with caution. I recommend cutting in cheap material
+                before committing for a design, to see any
+                potential issues before wasting expensive material. I'm not responsible for any material waste
+            </p>
+
+            <p><strong>Do you have any other jigsaw generators for different jigsaw styles?</strong></p>
+            <p>Sure, <a href="https://github.com/proceduraljigsaw">go suit yourself</a> </p>
+            <p><strong>I meant normal puzzles, with rectangular pieces with tabs</strong></p>
+            <p>This one can do it if you set Initial Grid position noise to 0, but if you don't want custom border, then draradech has a better one<a href="https://draradech.github.io/jigsaw/index.html">has a very
+                    good one</a>, and it's also free. </p>
+            <p><strong>How can I contact you?</strong></p>
+            <p>Use whatever tools github provides <a
+                    href="https://github.com/proceduraljigsaw/CustomShapeJigsawJs">here</a>
+                to report bugs or whatever you find.
+            </p>
+        </div>
     </div>
 
 
